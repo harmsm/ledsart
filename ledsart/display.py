@@ -285,7 +285,7 @@ class MatplotlibBackend(Backend):
 
 class RgbmatrixBackend(Backend):
     
-    def __init__(self,rows,num_chains,num_parallel=1,pwmbits=11,brightness=100,corr_luminance=True):
+    def __init__(self,rows,chain_length,num_parallel=1,pwmbits=11,brightness=100,corr_luminance=True):
         """
         Initialize rgbmatrix.
         """
@@ -316,16 +316,19 @@ class RgbmatrixBackend(Backend):
         self._matrix.brightness = self._brightness
         self._matrix.luminanceCorrect = self._corr_luminance
 
+        self._canvas = self._matrix.CreateFrameCanvas()
+
     def draw(self,matrix):
         """
         Draw the graphic on the panels.
         """
 
         # Create a PIL image from the matrix 
-        img = self._img.fromarray(np.uint8(matrix))
+        img = self._img.fromarray(np.uint8(matrix/5.))
 
         # Draw it.
-        self._matrix.Clear()
-        self._matrix.SetImage(img,0,0)
+        #self._matrix.Clear()
+        self._canvas.SetImage(img,0,0)
+        self._canvas = self._matrix.SwapOnVSync(self._canvas)
   
  

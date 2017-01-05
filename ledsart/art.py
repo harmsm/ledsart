@@ -4,7 +4,8 @@ __description__ = \
 __author__ = "Michael J. Harms"
 __date__ = "2017-01-01"
 
-import multiprocessing, random, time
+#import multiprocessing
+import random, time
 
 class ArtInstallation:
     """
@@ -62,6 +63,7 @@ class ArtInstallation:
         self.num_iterations = num_iterations
 
         self._run_loop = False
+        self._loaded_sensors = []
 
         self._create_new_generator()
 
@@ -71,8 +73,9 @@ class ArtInstallation:
         """
 
         self._run_loop = True
-        self._p = multiprocessing.Process(target=self._run)
-        self._p.start()
+        #self._p = multiprocessing.Process(target=self._run)
+        #self._p.start()
+        self._run()
 
     def _create_new_generator(self):
         """
@@ -110,7 +113,7 @@ class ArtInstallation:
                 self._iteration_counter += 1
 
             # Create a new generator, if we've run this generator for enough iterations
-            if self._iteration_counter > self._num_iterations:
+            if self._iteration_counter > self.num_iterations:
                 self._create_new_generator()
                 self._iteration_counter = 0
 

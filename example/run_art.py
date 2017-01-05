@@ -24,13 +24,13 @@ generator = conway.Conway
 # **kwargs.
 generator_configs = ({"x_size":64,
                       "y_size":64,
-                      "starting_density":0.5},)
+                      "starting_density":0.3},)
 
 # Create a tuple of dictionaries holding information necessary to plot.  The 
 # installation will randomly select from these when it initalizes a new 
 # generator, then pass them to .as_rgba as **kwargs.
-plot_configs = ({"cmap":cm.copper,
-                 "history_length":100,
+plot_configs = ({"cmap":cm.jet,
+                 "history_length":10,
                   "flip":False},)
 
 # ---------- Set up the display that will show the graphics ------------
@@ -49,7 +49,7 @@ rotation = [0,0,180,180]
 
 # Create a ledsart Display object that uses this layout.  This display has a 
 # .draw method that takes the output of .as_rgba and maps it to the layout.
-display = ledsart.Display(layout,chain,rotation,backend="matplotlib")
+display = ledsart.Display(layout,chain,rotation,backend="rgbmatrix")
 
 
 # ----------- Create the final ArtInstallation instance ---------------
@@ -59,17 +59,17 @@ installation = ledsart.ArtInstallation(conway.Conway,
                                        generator_configs=generator_configs,
                                        plot_configs=plot_configs,
                                        sampling_rate=0.1,
-                                       iteration_interval=300)
+                                       iteration_interval=1)
         
 # ----------- Set up range finder and append to installation ---------------
 # This causes a range finder attached at PIN1 (trigger) and PIN2 (read) to
 # attenuate iteration_interval between 0 and 300 s.  At 1.0 m, the interval
 # will be 150 s.  At 0.0 m, the interval will be 0 s. 
-installation.add_sensor(sensors.UltrasonicRange(PIN1,PIN2,timeout=100), #sensor
-                        "iteration_interval", # property to modify
-                        half_value=1.0,       # distance that gives 1/2 iteration_interval
-                        max_value=300,        # max iteration_interval
-                        steepness=4.0)        # steepness of curve (< 1 shallow, > 1 steeper)
+#installation.add_sensor(sensors.UltrasonicRange(PIN1,PIN2,timeout=100), #sensor
+#                        "iteration_interval", # property to modify
+#                        half_value=1.0,       # distance that gives 1/2 iteration_interval
+#                        max_value=300,        # max iteration_interval
+#                        steepness=4.0)        # steepness of curve (< 1 shallow, > 1 steeper)
 
 # ----------- Main loop ----------------
 # Run until ctrl+c is pressed.
