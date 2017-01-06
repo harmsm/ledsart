@@ -25,11 +25,23 @@ class Sensor:
         steepness: how steeply property_to_mod changes with sensor value.
         """
 
+        self.sensor = sensor
+        self.property_to_mod = property_to_mod
+        self.half_value = half_value
+        self.max_value = max_value
+        self.steepness = steepness
+
     def read_and_process(self):
         """
         """
 
         v = self.sensor.read()
+
+        if type(v) == bool:
+            return v
+
+        if v < 0:
+            return self.max_value
         A = (v/self.half_value)**self.steepness
 
         return A/(1 + A)*self.max_value
@@ -39,7 +51,7 @@ class Pin:
     Class that controls a raspberry pi GPIO pin.
     """
 
-    def __init__(self,pin_number,frequency=50,duty_cycle=100,as_input=False):
+    def __init__(self,pin_number,frequency=50,duty_cycle=100,as_input=False,initial_pull=None):
 
         self.pin_number = pin_number
         self.duty_cycle = duty_cycle
@@ -49,7 +61,10 @@ class Pin:
         self._pwm = None
 
         if self.as_input == True:
-            GPIO.setup(self.pin_number, GPIO.IN)
+            if initial_pull == None:
+                GPIO.setup(self.pin_number,GPIO.IN)
+            else:
+                GPIO.setup(self.pin_number,GPIO.IN,pull_up_down=initial_pull)
         else:
             GPIO.setup(self.pin_number, GPIO.OUT)
             self.down()
@@ -138,6 +153,22 @@ class Pin:
         GPIO.cleanup(self.pin_number)
 
 
+class Button:
+    """
+    Class for listening to a button via a gpio pin.
+    """
+    
+    def __init__(self,gpio_pin):
+   
+        self.pin = Pin(gpio_pin,as_input=True,initial_pull=GPIO.PUD_UP)
+
+    def read(self):
+
+        v = self.pin.input()
+        print("button",v)
+
+        return not v #self.pin.input()
+    
 
 class UltrasonicRange:
     """

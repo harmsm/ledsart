@@ -4,7 +4,6 @@ __description__ = \
 __author__ = "Michael J. Harms"
 __date__ = "2017-01-01"
 
-#import multiprocessing
 import random, time
 
 class ArtInstallation:
@@ -19,7 +18,8 @@ class ArtInstallation:
                  plot_configs=({},),
                  sampling_rate=0.1,
                  iteration_interval=1,
-                 num_iterations=1000):
+                 num_iterations=1000,
+                 burn_in=50):
         """
         Initialize an ArtInstallation object.
 
@@ -49,8 +49,8 @@ class ArtInstallation:
         iteration_interval: how long (in seconds) to wait between iterations.   
 
         num_iterations: how long to iterate each generator before randomly 
-                        
-        return generating another generator. 
+
+        burn_in: how many times to run the iterate() before first display                        
  
         """
 
@@ -61,11 +61,15 @@ class ArtInstallation:
         self.sampling_rate = sampling_rate
         self.iteration_interval = iteration_interval
         self.num_iterations = num_iterations
+        self.burn_in = burn_in
+        self.choose_new_generator = False
+        self.choose_new_plot = False
 
         self._run_loop = False
         self._loaded_sensors = []
 
-        self._create_new_generator()
+        self._choose_new_generator()
+        self._choose_new_plot()
 
     def run(self):
         """
@@ -73,13 +77,11 @@ class ArtInstallation:
         """
 
         self._run_loop = True
-        #self._p = multiprocessing.Process(target=self._run)
-        #self._p.start()
         self._run()
 
-    def _create_new_generator(self):
+    def _choose_new_generator(self):
         """
-        Choose a new generator and new display setting.
+        Choose a new generator and burn in.
         """
 
         # Create a new generator
@@ -88,11 +90,19 @@ class ArtInstallation:
             config = random.choice(self._generator_configs)
         self._iterator = self._generator(**config)
 
-        # Choose a new plotting style
+        for i in range(self.burn_in):
+            self._iterator.iterate()
+
+    def _choose_new_plot(self):
+        """
+        Choose a new plot style.
+        """
+
         plot_config = {}
         if len(self._plot_configs) != 0:
             plot_config = random.choice(self._plot_configs)
         self._plot_setting = plot_config
+
 
     def _run(self):
         """
@@ -101,24 +111,34 @@ class ArtInstallation:
         """
 
         self._iteration_counter = 0
-        self._next_time = -1
+        self._last_time_switched = time.time() - self.iteration_interval
 
         while self._run_loop:
 
             # Update the display if we've waited long enough
-            if time.time() > self._next_time:
+            if time.time() - self._last_time_switched > self.iteration_interval:
                 self._iterator.iterate()
                 self._display.draw(self._iterator.as_rgba(**self._plot_setting))
-                self._next_time = time.time() + self.iteration_interval
+
+                self._last_time_switched = time.time()
                 self._iteration_counter += 1
 
             # Create a new generator, if we've run this generator for enough iterations
             if self._iteration_counter > self.num_iterations:
-                self._create_new_generator()
+                self._choose_new_generator()
+                self._choose_new_plot()
                 self._iteration_counter = 0
 
             # Check sensor(s), if loaded, and update based on those sensors.
             self._check_sensors() 
+
+            if self.choose_new_plot:
+                self.choose_new_plot = False
+                self._choose_new_plot()
+
+            if self.choose_new_generator:
+                self.choose_new_generator = False
+                self._choose_new_generator()
 
             # Wait until next time step
             time.sleep(self.sampling_rate)
@@ -137,11 +157,9 @@ class ArtInstallation:
         for s in self._loaded_sensors:
             self.__dict__[s.property_to_mod] = s.read_and_process()
 
-
-    def add_sensor(self):
+    def add_sensor(self,s):
         """
         """
 
-        pass
-
+        self._loaded_sensors.append(s)
 

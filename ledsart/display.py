@@ -285,7 +285,7 @@ class MatplotlibBackend(Backend):
 
 class RgbmatrixBackend(Backend):
     
-    def __init__(self,rows,chain_length,num_parallel=1,pwmbits=11,brightness=100,corr_luminance=True):
+    def __init__(self,rows,chain_length,num_parallel=1,pwmbits=11,brightness=40,corr_luminance=True):
         """
         Initialize rgbmatrix.
         """
@@ -305,7 +305,7 @@ class RgbmatrixBackend(Backend):
             raise ValueError(err)
 
         self._brightness = int(round(brightness,0))
-        if self._brightness < 0 or self._brightness < 100:
+        if self._brightness < 0 or self._brightness > 100:
             err = "Brightness must be integer between 0 and 100.\n"
             raise ValueError(err)
 
@@ -324,10 +324,9 @@ class RgbmatrixBackend(Backend):
         """
 
         # Create a PIL image from the matrix 
-        img = self._img.fromarray(np.uint8(matrix/5.))
+        img = self._img.fromarray(np.uint8(matrix))
 
         # Draw it.
-        #self._matrix.Clear()
         self._canvas.SetImage(img,0,0)
         self._canvas = self._matrix.SwapOnVSync(self._canvas)
   
