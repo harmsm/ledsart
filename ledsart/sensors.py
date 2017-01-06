@@ -164,10 +164,7 @@ class Button:
 
     def read(self):
 
-        v = self.pin.input()
-        print("button",v)
-
-        return not v #self.pin.input()
+        return not self.pin.input()
     
 
 class UltrasonicRange:
